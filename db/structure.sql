@@ -56,7 +56,7 @@ CREATE TABLE users (
     last_sign_in_ip inet,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
-    name character varying,
+    name character varying NOT NULL,
     role integer
 );
 
@@ -103,6 +103,13 @@ CREATE UNIQUE INDEX index_users_on_email ON users USING btree (email);
 
 
 --
+-- Name: index_users_on_name; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX index_users_on_name ON users USING btree (name);
+
+
+--
 -- Name: index_users_on_reset_password_token; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -131,4 +138,8 @@ INSERT INTO schema_migrations (version) VALUES ('20160115100415');
 INSERT INTO schema_migrations (version) VALUES ('20160116093058');
 
 INSERT INTO schema_migrations (version) VALUES ('20160116094854');
+
+INSERT INTO schema_migrations (version) VALUES ('20160116102934');
+
+INSERT INTO schema_migrations (version) VALUES ('20160116112035');
 

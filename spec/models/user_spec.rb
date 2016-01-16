@@ -16,6 +16,44 @@ describe User do
   #   expect(relation.klass).to eq(Api::V1::MessageExportRequest)
   #   expect(relation.relation).to eq(Mongoid::Relations::Referenced::Many)
   # end
+  describe "invalid user" do
+    context "databse validations" do
+      let(:user) {FactoryGirl.build(:user, :name => nil)}
+
+      context 'when name is nil' do
+        it 'should raise StatementIinvalid' do
+          expect { user.save!(validate: false) }.to raise_error(ActiveRecord::StatementInvalid)
+        end
+      end
+
+      context 'when name is not unique' do
+        let(:user ) {FactoryGirl.create(:user, name: 'dav')}
+        let(:user_duplicate ) {FactoryGirl.build(:user, name: 'dav')}
+        it 'is invalid' do
+          expect{user.save!(validates:false)}.not_to raise_error
+          expect{user_duplicate.save!(validates:false)}.to raise_error(ActiveRecord::StatementInvalid)
+        end
+      end
+    end
+
+    context 'when ActiveRecord validations' do
+      context 'when name is nil' do
+        it 'should be invalid' do
+          expect { user.save!(validate: false) }.to raise_error(ActiveRecord::StatementInvalid)
+        end
+      end
+
+      context 'when name is not unique' do
+        let(:user ) {FactoryGirl.create(:user, name: 'dav')}
+        let(:user_duplicate ) {FactoryGirl.build(:user, name: 'dav')}
+        it 'is invalid' do
+          expect{user.save!(validates:false)}.not_to raise_error
+          expect{user_duplicate.save!(validates:false)}.to raise_error(ActiveRecord::StatementInvalid)
+        end
+      end
+    end
+
+  end
 
   it { should respond_to(:email) }
 
@@ -25,7 +63,12 @@ describe User do
   end
 
   describe "#set_default_role" do
-    let(:user) {}
+    context 'when first created' do
+      let (:user) {FactoryGirl.create(:user)}
+      it 'is assigned guest role' do
+        expect(user.guest?).to be true
+      end
+    end
   end
 
 end
