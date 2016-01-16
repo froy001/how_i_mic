@@ -17,38 +17,75 @@ describe User do
   #   expect(relation.relation).to eq(Mongoid::Relations::Referenced::Many)
   # end
   describe "invalid user" do
-    context "databse validations" do
-      let(:user) {FactoryGirl.build(:user, :name => nil)}
-
-      context 'when name is nil' do
-        it 'should raise StatementIinvalid' do
-          expect { user.save!(validate: false) }.to raise_error(ActiveRecord::StatementInvalid)
+    describe "databse validations" do
+      describe "email validations" do
+        let(:user) {FactoryGirl.build(:user, :email => nil)}
+        context 'when email is nil' do
+          it 'raises StatementIinvalid' do
+            expect { user.save!(validate: false) }.to raise_error(ActiveRecord::StatementInvalid)
+          end
         end
+
+        context 'when name is not unique' do
+          let!(:user ) {FactoryGirl.create(:user, email: 'a@example.com')}
+          let(:user_duplicate ) {FactoryGirl.build(:user, email: 'a@example.com')}
+          it 'raises StatementIinvalid' do
+            expect{user_duplicate.save!(validate:false)}.to raise_error(ActiveRecord::StatementInvalid)
+          end
+        end
+
       end
 
-      context 'when name is not unique' do
-        let(:user ) {FactoryGirl.create(:user, name: 'dav')}
-        let(:user_duplicate ) {FactoryGirl.build(:user, name: 'dav')}
-        it 'is invalid' do
-          expect{user.save!(validates:false)}.not_to raise_error
-          expect{user_duplicate.save!(validates:false)}.to raise_error(ActiveRecord::StatementInvalid)
+      describe "name validations" do
+        let(:user) {FactoryGirl.build(:user, :name => nil)}
+        context 'when name is nil' do
+          it 'raises StatementIinvalid' do
+            expect { user.save!(validate: false) }.to raise_error(ActiveRecord::StatementInvalid)
+          end
+        end
+
+        context 'when name is not unique' do
+          let!(:user ) {FactoryGirl.create(:user, name: 'dav')}
+          let(:user_duplicate ) {FactoryGirl.build(:user, name: 'dav')}
+          it 'raises StatementIinvalid' do
+            expect{user_duplicate.save!(validate:false)}.to raise_error(ActiveRecord::StatementInvalid)
+          end
         end
       end
     end
 
-    context 'when ActiveRecord validations' do
-      context 'when name is nil' do
-        it 'should be invalid' do
-          expect { user.save!(validate: false) }.to raise_error(ActiveRecord::StatementInvalid)
-        end
-      end
+    describe 'ActiveRecord validations' do
 
-      context 'when name is not unique' do
-        let(:user ) {FactoryGirl.create(:user, name: 'dav')}
-        let(:user_duplicate ) {FactoryGirl.build(:user, name: 'dav')}
-        it 'is invalid' do
-          expect{user.save!(validates:false)}.not_to raise_error
-          expect{user_duplicate.save!(validates:false)}.to raise_error(ActiveRecord::StatementInvalid)
+      describe "name validations" do
+        context 'when name is nil' do
+          let(:user) {FactoryGirl.build(:user, name: nil)}
+          it 'is invalid' do
+            expect(user).to be_invalid
+          end
+        end
+
+        context 'when name is blank' do
+          let(:user) {FactoryGirl.build(:user, name: '')}
+          it 'is invalid' do
+            expect(user).to be_invalid
+          end
+        end
+
+        context 'when name is not unique' do
+          let!(:user ) {FactoryGirl.create(:user, name: 'dav')}
+          let(:user_duplicate ) {FactoryGirl.build(:user, name: 'dav')}
+          it 'is invalid' do
+            expect(user_duplicate).to be_invalid
+          end
+        end
+
+        context 'when name is longer than 30' do
+          name = "a" * 31
+          let(:user) {FactoryGirl.build(:user, name: name)}
+
+          it 'is invalid' do
+            expect(user).to be_invalid
+          end
         end
       end
     end
@@ -67,6 +104,7 @@ describe User do
       let (:user) {FactoryGirl.create(:user)}
       it 'is assigned guest role' do
         expect(user.guest?).to be true
+        expect(user.admin?).to be false
       end
     end
   end
